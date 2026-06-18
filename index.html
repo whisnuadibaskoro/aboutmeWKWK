@@ -1,365 +1,133 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whisnu Adi Baskoro</title>
 
-<title>Whisnu Adi Baskoro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 
-<script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-<style>
-
-*{
-    font-family:'Inter',sans-serif;
-}
-
-body{
-    background:#ffffff;
-    color:#1d1d1f;
-}
-
-.glass{
-    backdrop-filter:blur(20px);
-    background:rgba(255,255,255,.75);
-}
-
-</style>
-
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: #ffffff;
+            color: #1d1d1f;
+        }
+        .glass {
+            backdrop-filter: blur(20px);
+            background: rgba(255,255,255,.75);
+        }
+    </style>
 </head>
 
 <body>
 
-<!-- NAVBAR -->
-
-<nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-100">
-
-    <div class="max-w-7xl mx-auto px-6 lg:px-10">
-
-        <div class="flex justify-between items-center h-16">
-
-            <h1 class="font-bold text-lg">
-                Whisnu
-            </h1>
-
-            <div class="hidden md:flex gap-8">
-
-                <a href="#about" class="hover:text-gray-500 transition">
-                    About
-                </a>
-
-                <a href="#skills" class="hover:text-gray-500 transition">
-                    Skills
-                </a>
-
-                <a href="#contact" class="hover:text-gray-500 transition">
-                    Contact
-                </a>
-
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-6 lg:px-10">
+            <div class="flex justify-between items-center h-16">
+                <h1 class="font-bold text-lg">Whisnu</h1>
+                <div class="hidden md:flex gap-8">
+                    <a href="#about" class="hover:text-gray-500 transition">About</a>
+                    <a href="#skills" class="hover:text-gray-500 transition">Skills</a>
+                    <a href="#contact" class="hover:text-gray-500 transition">Contact</a>
+                </div>
             </div>
-
         </div>
+    </nav>
 
-    </div>
+    <!-- HERO -->
+    <section class="min-h-screen flex flex-col justify-center items-center text-center px-6" style="margin-top: 150px;">
+        <img src="images/profile.jpg" 
+             alt="Profile" 
+             class="w-56 h-56 md:w-72 md:h-72 rounded-full object-cover shadow-2xl mb-10">
 
-</nav>
-
-<!-- HERO -->
-
-<section
-class="min-h-screen flex flex-col justify-center items-center text-center px-6" style="margin-top: 150px;">
-    
-    <img
-    src="images/profile.jpg"
-    alt="Profile"
-    class="w-56 h-56 md:w-72 md:h-72 rounded-full object-cover shadow-2xl mb-10"
-
-
-    <p class="text-gray-500 text-lg mb-3">
-        Mahasiswa | Bakul Gorden | Bakul HP
-    </p>
-
-    <h1
-    class="text-5xl md:text-8xl font-bold leading-tight">
-
-        Whisnu<br>
-        Adi Baskoro
-
-    </h1>
-
-    <p
-    class="mt-8 max-w-2xl text-lg md:text-2xl text-gray-600">
-
-        cuma mahasiswa biasa yang salah jurusan WKWKWKWK
-
-    </p>
-
-    <div class="flex gap-4 mt-10">
-
-        <a
-        href="#about"
-        class="bg-black text-white px-6 py-3 rounded-full">
-
-            Learn More
-
-        </a>
-
-        <a
-        href="#contact"
-        class="border px-6 py-3 rounded-full">
-
-            Contact
-
-        </a>
-
-    </div>
-
-</section>
-
-<!-- ABOUT -->
-
-<section
-id="about"
-class="min-h-screen flex items-center">
-
-    <div class="max-w-6xl mx-auto px-6">
-
-        <p class="text-gray-500 text-xl mb-4">
-            About Me
+        <p class="text-gray-500 text-lg mb-3">
+            Mahasiswa | Bakul Gorden | Bakul HP
         </p>
 
-        <h2
-        class="text-4xl md:text-7xl font-bold leading-tight">
+        <h1 class="text-5xl md:text-8xl font-bold leading-tight">
+            Whisnu<br>Adi Baskoro
+        </h1>
 
-            Feeling lost, 
-            not knowing where to go next
-
-        </h2>
-
-        <p
-        class="mt-10 text-xl text-gray-600 max-w-4xl leading-relaxed">
-
-            Saya adalah mahasiswa Informatika yang sedang bingung ini arahnya kemana?
-            peminatan pun bingung, eh malah ambil matkul seminar informatika. hadeh
-
+        <p class="mt-8 max-w-2xl text-lg md:text-2xl text-gray-600">
+            cuma mahasiswa biasa yang salah jurusan WKWKWKWK
         </p>
 
-    </div>
-
-</section>
-
-<!-- SKILLS -->
-
-<section
-id="skills"
-class="min-h-screen bg-gray-50 flex items-center">
-
-    <div class="max-w-7xl mx-auto px-6 w-full">
-
-        <p class="text-gray-500 text-xl mb-4">
-            Skills
-        </p>
-
-        <h2
-        class="text-4xl md:text-7xl font-bold mb-16">
-
-            Technologies I Use.
-
-        </h2>
-
-        <div
-        class="grid md:grid-cols-3 gap-8">
-
-            <div class="bg-white p-10 rounded-3xl shadow-sm">
-                <h3 class="text-3xl font-bold">
-                    HTML
-                </h3>
-            </div>
-
-            <div class="bg-white p-10 rounded-3xl shadow-sm">
-                <h3 class="text-3xl font-bold">
-                    JawaScript
-                </h3>
-            </div>
-
-            <div class="bg-white p-10 rounded-3xl shadow-sm">
-                <h3 class="text-3xl font-bold">
-                    Tailwind CSS
-                </h3>
-            </div>
-
-            <div class="bg-white p-10 rounded-3xl shadow-sm">
-                <h3 class="text-3xl font-bold">
-                    PHP
-                </h3>
-            </div>
-
-            <div class="bg-white p-10 rounded-3xl shadow-sm">
-                <h3 class="text-3xl font-bold">
-                    PostgreSQL
-                </h3>
-            </div>
-
-            <div class="bg-white p-10 rounded-3xl shadow-sm">
-                <h3 class="text-3xl font-bold">
-                    Dart
-                </h3>
-            </div>
-
+        <div class="flex gap-4 mt-10">
+            <a href="#about" class="bg-black text-white px-6 py-3 rounded-full hover:bg-gray-800 transition">
+                Learn More
+            </a>
+            <a href="#contact" class="border border-gray-300 px-6 py-3 rounded-full hover:bg-gray-50 transition">
+                Contact
+            </a>
         </div>
+    </section>
 
-    </div>
-
-</section>
-
-<!-- CONTACT -->
-
-<section
-id="contact"
-class="min-h-screen flex items-center">
-
-    <div class="max-w-6xl mx-auto px-6">
-
-        <p class="text-gray-500 text-xl mb-4">
-            Contact
-        </p>
-
-        <h2
-        class="text-4xl md:text-7xl font-bold mb-12">
-
-            Let's Connect.
-
-        </h2>
-
-        <div
-        class="flex flex-col gap-6 text-2xl">
-
-            <a
-            href="https://instagram.com/whisnuadii"
-            target="_blank"
-            class="hover:translate-x-2 transition">
-
-                Instagram →
-
-            </a>
-
-            <a
-            href="https://tiktok.com/@kzr.butem"
-            target="_blank"
-            class="hover:translate-x-2 transition">
-
-                TikTok →
-
-            </a>
-
-            <a
-            href="https://github.com/whisnuadibaskoro"
-            target="_blank"
-            class="hover:translate-x-2 transition">
-
-                GitHub →
-
-            </a>
-
+    <!-- ABOUT -->
+    <section id="about" class="min-h-screen flex items-center">
+        <div class="max-w-6xl mx-auto px-6">
+            <p class="text-gray-500 text-xl mb-4">About Me</p>
+            <h2 class="text-4xl md:text-7xl font-bold leading-tight">
+                Feeling lost, not knowing where to go next
+            </h2>
+            <p class="mt-10 text-xl text-gray-600 max-w-4xl leading-relaxed">
+                Saya adalah mahasiswa Informatika yang sedang bingung ini arahnya kemana? 
+                peminatan pun bingung, eh malah ambil matkul seminar informatika. hadeh
+            </p>
         </div>
+    </section>
 
-    </div>
+    <!-- SKILLS -->
+    <section id="skills" class="min-h-screen bg-gray-50 flex items-center">
+        <div class="max-w-7xl mx-auto px-6 w-full">
+            <p class="text-gray-500 text-xl mb-4">Skills</p>
+            <h2 class="text-4xl md:text-7xl font-bold mb-16">Technologies I Use.</h2>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">HTML</h3></div>
+                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">JavaScript</h3></div>
+                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">Tailwind CSS</h3></div>
+                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">PHP</h3></div>
+                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">PostgreSQL</h3></div>
+                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">Dart</h3></div>
+            </div>
+        </div>
+    </section>
 
-</section>
+    <!-- CONTACT -->
+    <section id="contact" class="min-h-screen flex items-center">
+        <div class="max-w-6xl mx-auto px-6">
+            <p class="text-gray-500 text-xl mb-4">Contact</p>
+            <h2 class="text-4xl md:text-7xl font-bold mb-12">Let's Connect.</h2>
+            <div class="flex flex-col gap-6 text-2xl">
+                <a href="https://instagram.com/whisnuadii" target="_blank" class="hover:translate-x-2 transition">Instagram →</a>
+                <a href="https://tiktok.com/@kzr.butem" target="_blank" class="hover:translate-x-2 transition">TikTok →</a>
+                <a href="https://github.com/whisnuadibaskoro" target="_blank" class="hover:translate-x-2 transition">GitHub →</a>
+            </div>
+        </div>
+    </section>
 
-<!-- FOOTER -->
+    <!-- FOOTER -->
+    <footer class="border-t py-10">
+        <div class="max-w-6xl mx-auto px-6 flex justify-between flex-col md:flex-row gap-4">
+            <p>© 2026 Whisnu Adi Baskoro</p>
+            <p>
+                Visitors : 
+                <span id="visitor-count">0</span>
+            </p>
+        </div>
+    </footer>
 
-<footer
-class="border-t py-10">
-
-    <div
-    class="max-w-6xl mx-auto px-6 flex justify-between flex-col md:flex-row gap-4">
-
-        <p>
-            © 2026 Whisnu Adi Baskoro
-        </p>
-
-        <p>
-            Visitors :
-            <span id="visitor-count">
-                0
-            </span>
-        </p>
-
-    </div>
-
-</footer>
-
-<!-- SUPABASE -->
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-
-const SUPABASE_URL = "https://dholuysmddxtihrlivmt.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRob2x1eXNtZGR4dGlocmxpdm10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExODI4NzksImV4cCI6MjA5Njc1ODg3OX0.1kzz1XQZ3jaaJSEY4JB_sg-mdlnyPn3d26JI1rNfuRI";
-
-const supabase =
-window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
-
-async function updateVisitor() {
-
-    const visited =
-        localStorage.getItem("visited");
-
-    if (!visited) {
-
-        const { data } = await supabase
-            .from("visitors")
-            .select("*")
-            .eq("id", 1)
-            .single();
-
-        const total =
-            data.total_visits + 1;
-
-        await supabase
-            .from("visitors")
-            .update({
-                total_visits: total
-            })
-            .eq("id", 1);
-
-        localStorage.setItem(
-            "visited",
-            "true"
-        );
-
-        document.getElementById(
-            "visitor-count"
-        ).innerText = total;
-
-    } else {
-
-        const { data } = await supabase
-            .from("visitors")
-            .select("*")
-            .eq("id", 1)
-            .single();
-
-        document.getElementById(
-            "visitor-count"
-        ).innerText =
-            data.total_visits;
-    }
-}
-
-updateVisitor();
-
-</script>
+    <!-- SUPABASE + SCRIPT -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
 
 </body>
 </html>
