@@ -5,152 +5,1081 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Whisnu Adi Baskoro</title>
 
+    <!-- Tailwind CSS with Class-Based Dark Mode -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
 
+    <!-- Google Fonts: Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
     <style>
         * {
             font-family: 'Inter', sans-serif;
         }
-        body {
-            background: #ffffff;
-            color: #1d1d1f;
-        }
+        
+        /* Glassmorphism Navbar */
         .glass {
             backdrop-filter: blur(20px);
-            background: rgba(255,255,255,.75);
+            -webkit-backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.76);
+        }
+        html.dark .glass {
+            background: rgba(9, 9, 11, 0.76);
+        }
+
+        /* 3D Tilt Container & Glare */
+        .tilt-wrapper {
+            perspective: 1000px;
+        }
+        .tilt-card {
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out, box-shadow 0.3s ease;
+            will-change: transform;
+        }
+        .tilt-card.resetting {
+            transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.5s ease;
+        }
+        .tilt-glare {
+            position: absolute;
+            inset: 0;
+            border-radius: 9999px;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.4), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Dino Canvas Styling */
+        #dino-canvas {
+            display: block;
+            width: 100%;
+            height: 260px;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .font-mono-score {
+            font-family: 'JetBrains Mono', monospace;
         }
     </style>
+
+    <!-- Prevent Flash of Unstyled Theme -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('whisnu-theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
 </head>
 
-<body>
+<body class="bg-gradient-to-b from-sky-50/85 via-white to-slate-50/90 text-[#1d1d1f] dark:bg-none dark:bg-[#09090b] dark:text-[#f5f5f7] transition-colors duration-300 antialiased selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black relative">
+
+    <!-- DUAL-MODE ANIMATED BACKGROUND CANVAS (Wind-Blown Clouds in Day Mode / Fire & Embers in Night Mode) -->
+    <canvas id="bg-canvas" class="fixed inset-0 w-full h-full pointer-events-none z-0"></canvas>
 
     <!-- NAVBAR -->
-    <nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-100">
+    <nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-200/60 dark:border-white/10 transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-6 lg:px-10">
             <div class="flex justify-between items-center h-16">
-                <h1 class="font-bold text-lg">Whisnu</h1>
-                <div class="hidden md:flex gap-8">
-                    <a href="#about" class="hover:text-gray-500 transition">About</a>
-                    <a href="#skills" class="hover:text-gray-500 transition">Skills</a>
-                    <a href="#experience" class="hover:text-gray-500 transition">Experience</a>
-                    <a href="#contact" class="hover:text-gray-500 transition">Contact</a>
+                
+                <!-- Bold Text Brand Name on Left -->
+                <a href="#" class="font-bold text-lg tracking-tight text-[#1d1d1f] dark:text-white hover:opacity-80 transition">
+                    Whisnu
+                </a>
+
+                <!-- Navigation Links & Day/Night Mode Toggle -->
+                <div class="flex items-center gap-6 md:gap-8">
+                    <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <a href="#about" class="hover:text-black dark:hover:text-white transition">About</a>
+                        <a href="#skills" class="hover:text-black dark:hover:text-white transition">Skills</a>
+                        <a href="#experience" class="hover:text-black dark:hover:text-white transition">Experience</a>
+                        <a href="#contact" class="hover:text-black dark:hover:text-white transition">Contact</a>
+                    </div>
+
+                    <!-- Night Mode / Light Mode Toggle Button -->
+                    <button id="theme-toggle" 
+                            type="button" 
+                            aria-label="Toggle Day and Night Mode"
+                            class="p-2.5 rounded-full bg-white/80 hover:bg-gray-100 dark:bg-[#161618]/80 dark:hover:bg-[#222226] border border-gray-200/80 dark:border-white/15 text-gray-800 dark:text-gray-200 shadow-xs transition-all duration-200 active:scale-95 cursor-pointer">
+                        <!-- Sun Icon (shown in dark mode) -->
+                        <svg id="icon-sun" class="w-5 h-5 hidden dark:block text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="4"></circle>
+                            <path stroke-linecap="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+                        </svg>
+                        <!-- Moon Icon (shown in light mode) -->
+                        <svg id="icon-moon" class="w-5 h-5 block dark:hidden text-slate-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
                 </div>
+
             </div>
         </div>
     </nav>
 
-    <!-- HERO -->
-    <section class="min-h-screen flex flex-col justify-center items-center text-center px-6" style="margin-top: 150px;">
-        <img src="images/profile.jpg" 
-             alt="Profile" 
-             class="w-56 h-56 md:w-72 md:h-72 rounded-full object-cover shadow-2xl mb-10">
+    <!-- MAIN CONTENT WRAPPER ABOVE BACKGROUND CANVAS -->
+    <main class="relative z-10">
 
-        <p class="text-gray-500 text-lg mb-3">
-            Mahasiswa | Bakul Gorden | Bakul HP
-        </p>
-
-        <h1 class="text-5xl md:text-8xl font-bold leading-tight">
-            Whisnu<br>Adi Baskoro
-        </h1>
-
-        <p class="mt-8 max-w-2xl text-lg md:text-2xl text-gray-600">
-            cuma mahasiswa biasa yang salah jurusan WKWKWKWK
-        </p>
-
-        <div class="flex gap-4 mt-10">
-            <a href="#about" class="bg-black text-white px-6 py-3 rounded-full hover:bg-gray-800 transition">
-                Learn More
-            </a>
-            <a href="#contact" class="border border-gray-300 px-6 py-3 rounded-full hover:bg-gray-50 transition">
-                Contact
-            </a>
-        </div>
-    </section>
-
-    <!-- ABOUT -->
-    <section id="about" class="min-h-screen flex items-center">
-        <div class="max-w-6xl mx-auto px-6">
-            <p class="text-gray-500 text-xl mb-4">About Me</p>
-            <h2 class="text-4xl md:text-7xl font-bold leading-tight">
-                Feeling lost, not knowing where to go next
-            </h2>
-            <p class="mt-10 text-xl text-gray-600 max-w-4xl leading-relaxed">
-                Saya adalah mahasiswa Informatika yang sedang bingung ini arahnya kemana? 
-                peminatan pun bingung, eh malah ambil matkul seminar informatika. hadeh
-            </p>
-        </div>
-    </section>
-
-    <!-- SKILLS -->
-    <section id="skills" class="min-h-screen bg-gray-50 flex items-center">
-        <div class="max-w-7xl mx-auto px-6 w-full">
-            <p class="text-gray-500 text-xl mb-4">Skills</p>
-            <h2 class="text-4xl md:text-7xl font-bold mb-16">Technologies I Use.</h2>
+        <!-- HERO -->
+        <section class="min-h-screen flex flex-col justify-center items-center text-center px-6 pt-28 pb-20">
             
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">HTML</h3></div>
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">JavaScript</h3></div>
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">Tailwind CSS</h3></div>
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">PHP</h3></div>
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">PostgreSQL</h3></div>
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">Dart</h3></div>
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">Express.js</h3></div>
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">Node.js</h3></div>
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">Flutter</h3></div>
+            <!-- 3D Tilt Profile Picture Wrapper -->
+            <div class="tilt-wrapper mb-10 relative group">
+                <!-- Subtle Ambient Glow Behind Profile -->
+                <div class="absolute -inset-2 rounded-full bg-gradient-to-tr from-sky-300/60 via-white to-blue-200/60 dark:from-orange-500/25 dark:via-red-500/20 dark:to-amber-500/25 blur-xl opacity-80 group-hover:opacity-100 transition duration-500"></div>
+                
+                <div id="profile-tilt" class="tilt-card relative w-56 h-56 md:w-72 md:h-72 rounded-full p-1.5 bg-white/90 dark:bg-[#161618]/90 backdrop-blur-md border border-gray-200/80 dark:border-white/15 shadow-2xl cursor-pointer">
+                    <img id="profile-img"
+                         src="images/profile.jpg" 
+                         alt="Whisnu Adi Baskoro Profile" 
+                         class="w-full h-full rounded-full object-cover select-none pointer-events-none">
+                    <!-- Graceful Inline SVG Fallback Avatar if images/profile.jpg is missing -->
+                    <div id="profile-fallback" class="hidden w-full h-full rounded-full bg-gradient-to-br from-sky-100 to-slate-200 dark:from-zinc-800 dark:to-zinc-900 flex items-center justify-center select-none pointer-events-none">
+                        <svg class="w-28 h-28 md:w-36 md:h-36 text-slate-600 dark:text-zinc-300" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="60" cy="44" r="22" fill="currentColor" opacity="0.85"/>
+                            <path d="M22 104C22 83.0132 39.0132 66 60 66C80.9868 66 98 83.0132 98 104" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity="0.85"/>
+                        </svg>
+                    </div>
+                    <!-- Interactive Dynamic Glare Overlay -->
+                    <div id="profile-glare" class="tilt-glare"></div>
+                </div>
             </div>
-        </div>
-    </section>
 
-    <!-- EXPERIENCE -->
-    <section id="experience" class="min-h-screen bg-gray-50 flex items-center">
-        <div class="max-w-7xl mx-auto px-6 w-full">
-            <p class="text-gray-500 text-xl mb-4">Experience</p>
-            <h2 class="text-4xl md:text-7xl font-bold mb-16">My Journey at UMP.</h2>
-            
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">Staff PSDM HMTI 2025 - 2026</h3></div>
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">Ketua Pelaksana OSMA TI</h3></div>
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">Koor Acara NITRO 2026</h3></div>
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">Koor Acara LDO 2025 HMTI</h3></div>
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">Staff Acara NITRO 2025</h3></div>
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">Staff Humas LDO 2024 HMTI</h3></div>
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">FEM BEM KM FTS</h3></div>
-                <div class="bg-white p-10 rounded-3xl shadow-sm"><h3 class="text-3xl font-bold">Staff Muda HMTI 2024 - 2025</h3></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CONTACT -->
-    <section id="contact" class="min-h-screen flex items-center">
-        <div class="max-w-6xl mx-auto px-6">
-            <p class="text-gray-500 text-xl mb-4">Contact</p>
-            <h2 class="text-4xl md:text-7xl font-bold mb-12">Let's Connect.</h2>
-            <div class="flex flex-col gap-6 text-2xl">
-                <a href="https://instagram.com/whisnuadii" target="_blank" class="hover:translate-x-2 transition">Instagram →</a>
-                <a href="https://tiktok.com/@kzr.butem" target="_blank" class="hover:translate-x-2 transition">TikTok →</a>
-                <a href="https://github.com/whisnuadibaskoro" target="_blank" class="hover:translate-x-2 transition">GitHub →</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- FOOTER -->
-    <footer class="border-t py-10">
-        <div class="max-w-6xl mx-auto px-6 flex justify-between flex-col md:flex-row gap-4">
-            <p>© 2026 Whisnu Adi Baskoro</p>
-            <p>
-                Visitors : 
-                <span id="visitor-count">0</span>
+            <p class="text-gray-600 dark:text-gray-400 text-base md:text-lg font-medium tracking-wide mb-3">
+                Mahasiswa | Bakul Gorden | Bakul HP
             </p>
-        </div>
-    </footer>
 
-    <!-- SUPABASE + SCRIPT -->
+            <h1 class="text-5xl md:text-8xl font-bold tracking-tight leading-tight">
+                Whisnu<br>Adi Baskoro
+            </h1>
+
+            <p class="mt-8 max-w-2xl text-lg md:text-2xl text-gray-600 dark:text-gray-300 font-normal">
+                cuma mahasiswa biasa yang salah jurusan WKWKWKWK
+            </p>
+
+            <div class="flex flex-wrap justify-center gap-4 mt-10">
+                <a href="#about" class="bg-[#1d1d1f] dark:bg-white text-white dark:text-[#09090b] font-medium px-7 py-3.5 rounded-full hover:opacity-90 transition shadow-sm">
+                    Learn More
+                </a>
+                <a href="#contact" class="bg-white/70 dark:bg-white/5 backdrop-blur-md border border-gray-300/80 dark:border-white/20 px-7 py-3.5 rounded-full font-medium hover:bg-white dark:hover:bg-white/10 transition">
+                    Contact
+                </a>
+            </div>
+        </section>
+
+        <!-- ABOUT -->
+        <section id="about" class="min-h-screen flex items-center py-24">
+            <div class="max-w-6xl mx-auto px-6">
+                <p class="text-gray-500 dark:text-gray-400 text-xl font-medium mb-4">About Me</p>
+                <h2 class="text-4xl md:text-7xl font-bold tracking-tight leading-tight">
+                    Feeling lost, not knowing where to go next
+                </h2>
+                <p class="mt-10 text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-4xl leading-relaxed">
+                    Saya adalah mahasiswa Informatika yang sedang bingung ini arahnya kemana? 
+                    peminatan pun bingung, eh malah ambil matkul seminar informatika. hadeh
+                </p>
+            </div>
+        </section>
+
+        <!-- SKILLS -->
+        <section id="skills" class="min-h-screen bg-white/45 dark:bg-black/30 backdrop-blur-[2px] flex items-center py-24 border-t border-gray-200/60 dark:border-white/10 transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-6 w-full">
+                <p class="text-gray-500 dark:text-gray-400 text-xl font-medium mb-4">Skills</p>
+                <h2 class="text-4xl md:text-7xl font-bold tracking-tight mb-16">Technologies I Use.</h2>
+                
+                <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">HTML</h3>
+                    </div>
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">JavaScript</h3>
+                    </div>
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">Tailwind CSS</h3>
+                    </div>
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">PHP</h3>
+                    </div>
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">PostgreSQL</h3>
+                    </div>
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">Dart</h3>
+                    </div>
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">Express.js</h3>
+                    </div>
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">Node.js</h3>
+                    </div>
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">Flutter</h3>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPERIENCE -->
+        <section id="experience" class="min-h-screen bg-white/45 dark:bg-black/30 backdrop-blur-[2px] flex items-center py-24 transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-6 w-full">
+                <p class="text-gray-500 dark:text-gray-400 text-xl font-medium mb-4">Experience</p>
+                <h2 class="text-4xl md:text-7xl font-bold tracking-tight mb-16">My Journey at UMP.</h2>
+                
+                <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">Staff PSDM HMTI 2025 - 2026</h3>
+                    </div>
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">Ketua Pelaksana OSMA TI</h3>
+                    </div>
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">Koor Acara NITRO 2026</h3>
+                    </div>
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">Koor Acara LDO 2025 HMTI</h3>
+                    </div>
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">Staff Acara NITRO 2025</h3>
+                    </div>
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">Staff Humas LDO 2024 HMTI</h3>
+                    </div>
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">FEM BEM KM FTS</h3>
+                    </div>
+                    <div class="bg-white/80 dark:bg-[#161618]/75 backdrop-blur-md border border-gray-200/70 dark:border-white/10 p-10 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                        <h3 class="text-2xl md:text-3xl font-bold">Staff Muda HMTI 2024 - 2025</h3>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MINI GAME: GOOGLE DINO RUNNER (Right before Contact) -->
+        <section id="game" class="py-24 border-t border-gray-200/60 dark:border-white/10 transition-colors duration-300">
+            <div class="max-w-5xl mx-auto px-6">
+                <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+                    <div>
+                        <p class="text-gray-500 dark:text-gray-400 text-lg font-medium mb-2">Gabut Corner</p>
+                        <h2 class="text-3xl md:text-5xl font-bold tracking-tight">No Internet? Main Dino Dulu.</h2>
+                    </div>
+                    <div class="flex items-center gap-6 font-mono-score text-sm md:text-base">
+                        <div class="text-gray-500 dark:text-gray-400">
+                            HI <span id="dino-high-score" class="font-bold text-[#1d1d1f] dark:text-white">00000</span>
+                        </div>
+                        <div class="text-gray-500 dark:text-gray-400">
+                            SCORE <span id="dino-score" class="font-bold text-[#1d1d1f] dark:text-white">00000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game Box Container -->
+                <div class="relative rounded-3xl overflow-hidden bg-white/85 dark:bg-[#161618]/85 backdrop-blur-md border border-gray-200/80 dark:border-white/15 shadow-sm">
+                    <canvas id="dino-canvas"></canvas>
+
+                    <!-- Start / Game Over Overlay -->
+                    <div id="dino-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-[#161618]/85 backdrop-blur-xs transition-opacity duration-200 px-4 text-center">
+                        <p id="dino-status-title" class="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">
+                            Chrome Dino Runner
+                        </p>
+                        <p id="dino-status-sub" class="text-sm md:text-base text-gray-600 dark:text-gray-400 mb-6">
+                            Tekan <kbd class="px-2 py-0.5 rounded bg-gray-200 dark:bg-white/10 font-mono-score text-xs">Space</kbd> / <kbd class="px-2 py-0.5 rounded bg-gray-200 dark:bg-white/10 font-mono-score text-xs">↑</kbd> atau Tap layar untuk lompat
+                        </p>
+                        <button id="dino-start-btn" type="button" class="px-6 py-3 rounded-full bg-[#1d1d1f] dark:bg-white text-white dark:text-[#09090b] font-semibold text-sm hover:opacity-90 active:scale-95 transition shadow-md cursor-pointer">
+                            Mulai Main
+                        </button>
+                    </div>
+                </div>
+
+                <!-- External Touch / Mobile Controls -->
+                <div class="mt-4 flex items-center justify-between text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                    <span>Tip: Tekan <kbd class="px-1.5 py-0.5 rounded bg-white/80 dark:bg-white/10 border border-gray-200 dark:border-white/10 font-mono-score text-xs">↓</kbd> untuk menunduk cepat saat di udara!</span>
+                    <button id="dino-jump-btn" type="button" class="md:hidden px-5 py-2.5 rounded-full bg-white/85 dark:bg-[#161618]/85 border border-gray-200 dark:border-white/15 font-semibold text-[#1d1d1f] dark:text-white active:scale-95 transition">
+                        Jump ↑
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT -->
+        <section id="contact" class="min-h-[80vh] flex items-center py-24 border-t border-gray-200/60 dark:border-white/10">
+            <div class="max-w-6xl mx-auto px-6 w-full">
+                <p class="text-gray-500 dark:text-gray-400 text-xl font-medium mb-4">Contact</p>
+                <h2 class="text-4xl md:text-7xl font-bold tracking-tight mb-12">Let's Connect.</h2>
+                <div class="flex flex-col gap-6 text-2xl md:text-3xl font-medium">
+                    <a href="https://instagram.com/whisnuadii" target="_blank" rel="noopener noreferrer" class="w-fit hover:translate-x-3 hover:text-gray-500 dark:hover:text-gray-300 transition-all duration-200">
+                        Instagram →
+                    </a>
+                    <a href="https://tiktok.com/@kzr.butem" target="_blank" rel="noopener noreferrer" class="w-fit hover:translate-x-3 hover:text-gray-500 dark:hover:text-gray-300 transition-all duration-200">
+                        TikTok →
+                    </a>
+                    <a href="https://github.com/whisnuadibaskoro" target="_blank" rel="noopener noreferrer" class="w-fit hover:translate-x-3 hover:text-gray-500 dark:hover:text-gray-300 transition-all duration-200">
+                        GitHub →
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="border-t border-gray-200/70 dark:border-white/10 bg-white/50 dark:bg-black/40 backdrop-blur-md py-10 transition-colors duration-300">
+            <div class="max-w-6xl mx-auto px-6 flex justify-between items-center flex-col md:flex-row gap-4 text-gray-600 dark:text-gray-400">
+                <p>© 2026 Whisnu Adi Baskoro</p>
+                <p>
+                    Visitors : 
+                    <span id="visitor-count" class="font-semibold text-[#1d1d1f] dark:text-white">0</span>
+                </p>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- SUPABASE + EXTERNAL SCRIPT -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
 
+    <!-- INTERACTIVE & DUAL-MODE CANVAS ENGINE -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            /* =========================================================
+               0. PROFILE IMAGE GRACEFUL FALLBACK HANDLER
+            ========================================================= */
+            const profileImg = document.getElementById('profile-img');
+            const profileFallback = document.getElementById('profile-fallback');
+            if (profileImg && profileFallback) {
+                profileImg.addEventListener('error', () => {
+                    profileImg.classList.add('hidden');
+                    profileFallback.classList.remove('hidden');
+                });
+                if (profileImg.complete && profileImg.naturalWidth === 0) {
+                    profileImg.classList.add('hidden');
+                    profileFallback.classList.remove('hidden');
+                }
+            }
+
+            /* =========================================================
+               1. DUAL-MODE BACKGROUND ANIMATION CANVAS
+                  - Day Mode: Wind-Blown Fluffy Clouds & Breeze Streaks
+                  - Night Mode: Glowing Rising Fire Flames & Embers
+            ========================================================= */
+            const bgCanvas = document.getElementById('bg-canvas');
+            const bgCtx = bgCanvas.getContext('2d');
+            let bgW = window.innerWidth;
+            let bgH = window.innerHeight;
+            let bgTime = 0;
+
+            // --- Day Mode State: Layered Clouds & Wind Streaks ---
+            const cloudsBg = [];
+            const windStreaks = [];
+
+            function createCloud(randomX = true) {
+                // Depth layer: 0 = distant/slow, 1 = mid, 2 = foreground/faster
+                const layer = Math.floor(Math.random() * 3);
+                const scale = layer === 0 ? 0.65 + Math.random() * 0.2 : (layer === 1 ? 0.9 + Math.random() * 0.25 : 1.2 + Math.random() * 0.35);
+                const speed = (layer === 0 ? 0.28 : (layer === 1 ? 0.55 : 0.92)) + Math.random() * 0.25;
+                const opacity = layer === 0 ? 0.52 : (layer === 1 ? 0.72 : 0.88);
+                const baseWidth = 170 * scale;
+
+                // Generate multi-puff silhouette offsets once per cloud for consistent natural shape
+                const puffs = [
+                    { dx: -52 * scale, dy: 8 * scale, r: 28 * scale },
+                    { dx: -26 * scale, dy: -6 * scale, r: 38 * scale },
+                    { dx: 8 * scale,   dy: -14 * scale, r: 46 * scale },
+                    { dx: 42 * scale,  dy: -4 * scale, r: 35 * scale },
+                    { dx: 66 * scale,  dy: 10 * scale, r: 25 * scale }
+                ];
+
+                return {
+                    x: randomX ? Math.random() * (bgW + 300) - 150 : -baseWidth - Math.random() * 140,
+                    baseY: 50 + Math.random() * (bgH * 0.78),
+                    speed,
+                    scale,
+                    opacity,
+                    layer,
+                    puffs,
+                    bobOffset: Math.random() * Math.PI * 2,
+                    bobSpeed: 0.008 + Math.random() * 0.008,
+                    tiltAngle: (0.02 + layer * 0.015) // slight wind lean forward
+                };
+            }
+
+            function createWindStreak(randomX = true) {
+                return {
+                    x: randomX ? Math.random() * bgW : -160 - Math.random() * 200,
+                    y: 40 + Math.random() * (bgH - 80),
+                    length: 70 + Math.random() * 140,
+                    speed: 2.6 + Math.random() * 2.4,
+                    alpha: 0.12 + Math.random() * 0.18,
+                    waveAmp: 2 + Math.random() * 4,
+                    waveFreq: 0.025 + Math.random() * 0.015,
+                    phase: Math.random() * Math.PI * 2
+                };
+            }
+
+            function initDayAtmosphere() {
+                cloudsBg.length = 0;
+                windStreaks.length = 0;
+                const cloudCount = Math.max(8, Math.min(16, Math.floor(bgW / 110)));
+                for (let i = 0; i < cloudCount; i++) {
+                    cloudsBg.push(createCloud(true));
+                }
+                // Sort back-to-front by layer for realistic parallax overlap
+                cloudsBg.sort((a, b) => a.layer - b.layer);
+
+                const streakCount = Math.max(10, Math.min(22, Math.floor(bgW / 80)));
+                for (let i = 0; i < streakCount; i++) {
+                    windStreaks.push(createWindStreak(true));
+                }
+            }
+
+            function drawDayAtmosphere() {
+                bgCtx.clearRect(0, 0, bgW, bgH);
+
+                // Subtle warm sunlight glow in upper-right sky
+                const sunGrad = bgCtx.createRadialGradient(bgW * 0.85, bgH * 0.12, 10, bgW * 0.85, bgH * 0.12, Math.max(bgW, bgH) * 0.55);
+                sunGrad.addColorStop(0, 'rgba(255, 251, 235, 0.75)');
+                sunGrad.addColorStop(0.5, 'rgba(224, 242, 254, 0.3)');
+                sunGrad.addColorStop(1, 'rgba(224, 242, 254, 0)');
+                bgCtx.fillStyle = sunGrad;
+                bgCtx.fillRect(0, 0, bgW, bgH);
+
+                // Gentle wind gust modulation
+                const windGust = 1 + Math.sin(bgTime * 0.012) * 0.28;
+
+                // 1. Draw subtle flowing wind breeze curves
+                bgCtx.lineCap = 'round';
+                windStreaks.forEach(s => {
+                    s.x += s.speed * windGust;
+                    if (s.x - s.length > bgW + 50) {
+                        Object.assign(s, createWindStreak(false));
+                    }
+
+                    bgCtx.beginPath();
+                    bgCtx.strokeStyle = `rgba(148, 197, 235, ${s.alpha})`;
+                    bgCtx.lineWidth = 1.4;
+                    const segments = 12;
+                    for (let i = 0; i <= segments; i++) {
+                        const t = i / segments;
+                        const px = s.x - t * s.length;
+                        const py = s.y + Math.sin(px * s.waveFreq + s.phase + bgTime * 0.03) * s.waveAmp;
+                        if (i === 0) bgCtx.moveTo(px, py);
+                        else bgCtx.lineTo(px, py);
+                    }
+                    bgCtx.stroke();
+                });
+
+                // 2. Draw fluffy multi-layered wind-blown clouds
+                cloudsBg.forEach(c => {
+                    c.x += c.speed * windGust;
+                    c.bobOffset += c.bobSpeed;
+                    const currentY = c.baseY + Math.sin(c.bobOffset) * (4 * c.scale);
+
+                    if (c.x - 140 * c.scale > bgW + 80) {
+                        const fresh = createCloud(false);
+                        fresh.layer = c.layer;
+                        Object.assign(c, fresh);
+                        cloudsBg.sort((a, b) => a.layer - b.layer);
+                    }
+
+                    bgCtx.save();
+                    bgCtx.translate(c.x, currentY);
+                    // Slight wind shear/lean in direction of wind
+                    bgCtx.transform(1, 0, -c.tiltAngle * windGust, 1, 0, 0);
+
+                    // Soft under-shadow for 3D fluffiness
+                    bgCtx.fillStyle = `rgba(186, 214, 238, ${c.opacity * 0.48})`;
+                    bgCtx.beginPath();
+                    c.puffs.forEach(p => {
+                        bgCtx.moveTo(p.dx + p.r, p.dy + 6 * c.scale);
+                        bgCtx.arc(p.dx, p.dy + 6 * c.scale, p.r, 0, Math.PI * 2);
+                    });
+                    bgCtx.roundRect(-62 * c.scale, 4 * c.scale, 134 * c.scale, 28 * c.scale, 14 * c.scale);
+                    bgCtx.fill();
+
+                    // Main bright white fluffy cloud body
+                    bgCtx.fillStyle = `rgba(255, 255, 255, ${c.opacity})`;
+                    bgCtx.beginPath();
+                    c.puffs.forEach(p => {
+                        bgCtx.moveTo(p.dx + p.r, p.dy);
+                        bgCtx.arc(p.dx, p.dy, p.r, 0, Math.PI * 2);
+                    });
+                    bgCtx.roundRect(-64 * c.scale, 0, 136 * c.scale, 26 * c.scale, 13 * c.scale);
+                    bgCtx.fill();
+
+                    bgCtx.restore();
+                });
+            }
+
+            // --- Night Mode State: Rising Fire Flames & Glowing Embers ---
+            const fireParticles = [];
+            const embers = [];
+
+            function createFireParticle() {
+                return {
+                    x: Math.random() * bgW,
+                    y: bgH + 20 + Math.random() * 40,
+                    vx: (Math.random() - 0.5) * 0.8,
+                    vy: -(1.4 + Math.random() * 2.4),
+                    radius: 28 + Math.random() * 55,
+                    life: 0,
+                    maxLife: 75 + Math.random() * 65,
+                    wobble: Math.random() * Math.PI * 2
+                };
+            }
+
+            function createEmber() {
+                return {
+                    x: Math.random() * bgW,
+                    y: bgH - Math.random() * 60,
+                    vx: (Math.random() - 0.5) * 1.1,
+                    vy: -(0.9 + Math.random() * 2.1),
+                    size: 1.5 + Math.random() * 2.8,
+                    life: 0,
+                    maxLife: 110 + Math.random() * 120,
+                    flickerOffset: Math.random() * Math.PI * 2
+                };
+            }
+
+            function initNightFire() {
+                fireParticles.length = 0;
+                embers.length = 0;
+                const flameCount = Math.max(45, Math.floor(bgW / 18));
+                for (let i = 0; i < flameCount; i++) {
+                    const p = createFireParticle();
+                    p.life = Math.random() * p.maxLife;
+                    p.y = bgH - (p.life / p.maxLife) * (bgH * 0.35);
+                    fireParticles.push(p);
+                }
+                const emberCount = Math.max(35, Math.floor(bgW / 28));
+                for (let i = 0; i < emberCount; i++) {
+                    const e = createEmber();
+                    e.life = Math.random() * e.maxLife;
+                    e.y = bgH - (e.life / e.maxLife) * (bgH * 0.75);
+                    embers.push(e);
+                }
+            }
+
+            function drawNightFire() {
+                bgCtx.clearRect(0, 0, bgW, bgH);
+
+                // Warm ambient bottom furnace glow
+                const baseGlow = bgCtx.createLinearGradient(0, bgH, 0, bgH * 0.55);
+                baseGlow.addColorStop(0, 'rgba(234, 88, 12, 0.24)');
+                baseGlow.addColorStop(0.45, 'rgba(185, 28, 28, 0.08)');
+                baseGlow.addColorStop(1, 'rgba(9, 9, 11, 0)');
+                bgCtx.fillStyle = baseGlow;
+                bgCtx.fillRect(0, bgH * 0.5, bgW, bgH * 0.5);
+
+                bgCtx.save();
+                bgCtx.globalCompositeOperation = 'lighter';
+
+                // 1. Rising Flame Plumes
+                for (let i = 0; i < fireParticles.length; i++) {
+                    const p = fireParticles[i];
+                    p.life++;
+                    p.wobble += 0.05;
+                    p.x += p.vx + Math.sin(p.wobble) * 0.65;
+                    p.y += p.vy;
+
+                    const progress = p.life / p.maxLife;
+                    if (progress >= 1) {
+                        fireParticles[i] = createFireParticle();
+                        continue;
+                    }
+
+                    const currentRadius = p.radius * (1 - progress * 0.68);
+                    const alpha = Math.sin(progress * Math.PI) * 0.24;
+
+                    const grad = bgCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, currentRadius);
+                    if (progress < 0.35) {
+                        grad.addColorStop(0, `rgba(254, 240, 138, ${alpha * 1.15})`); // bright yellow core
+                        grad.addColorStop(0.45, `rgba(249, 115, 22, ${alpha})`);      // vibrant orange
+                        grad.addColorStop(1, 'rgba(220, 38, 38, 0)');
+                    } else {
+                        grad.addColorStop(0, `rgba(249, 115, 22, ${alpha})`);
+                        grad.addColorStop(0.5, `rgba(220, 38, 38, ${alpha * 0.7})`);   // deep crimson edge
+                        grad.addColorStop(1, 'rgba(127, 29, 29, 0)');
+                    }
+
+                    bgCtx.fillStyle = grad;
+                    bgCtx.beginPath();
+                    bgCtx.arc(p.x, p.y, currentRadius, 0, Math.PI * 2);
+                    bgCtx.fill();
+                }
+
+                // 2. Floating Glowing Embers
+                for (let i = 0; i < embers.length; i++) {
+                    const e = embers[i];
+                    e.life++;
+                    e.x += e.vx + Math.sin(bgTime * 0.04 + e.flickerOffset) * 0.55;
+                    e.y += e.vy;
+
+                    const progress = e.life / e.maxLife;
+                    if (progress >= 1 || e.y < -20) {
+                        embers[i] = createEmber();
+                        continue;
+                    }
+
+                    const flicker = 0.65 + 0.35 * Math.sin(bgTime * 0.15 + e.flickerOffset);
+                    const alpha = Math.sin(progress * Math.PI) * 0.85 * flicker;
+
+                    bgCtx.fillStyle = `rgba(253, 186, 116, ${alpha})`;
+                    bgCtx.beginPath();
+                    bgCtx.arc(e.x, e.y, e.size, 0, Math.PI * 2);
+                    bgCtx.fill();
+                }
+
+                bgCtx.restore();
+            }
+
+            function resizeBgCanvas() {
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                bgW = window.innerWidth;
+                bgH = window.innerHeight;
+                bgCanvas.width = bgW * dpr;
+                bgCanvas.height = bgH * dpr;
+                bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                initDayAtmosphere();
+                initNightFire();
+            }
+
+            function animateBackground() {
+                bgTime++;
+                const isDark = document.documentElement.classList.contains('dark');
+                if (isDark) {
+                    drawNightFire();
+                } else {
+                    drawDayAtmosphere();
+                }
+                requestAnimationFrame(animateBackground);
+            }
+
+            window.addEventListener('resize', resizeBgCanvas);
+            resizeBgCanvas();
+            animateBackground();
+
+            /* =========================================================
+               2. NIGHT MODE / DAY MODE TOGGLE
+            ========================================================= */
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const htmlEl = document.documentElement;
+
+            themeToggleBtn.addEventListener('click', () => {
+                const isDark = htmlEl.classList.toggle('dark');
+                localStorage.setItem('whisnu-theme', isDark ? 'dark' : 'light');
+                if (typeof drawDinoScene === 'function') {
+                    drawDinoScene();
+                }
+            });
+
+            /* =========================================================
+               3. 3D TILT EFFECT ON PROFILE PICTURE
+            ========================================================= */
+            const tiltCard = document.getElementById('profile-tilt');
+            const tiltGlare = document.getElementById('profile-glare');
+
+            if (tiltCard && tiltGlare) {
+                const maxTilt = 16;
+
+                const handleTiltMove = (clientX, clientY) => {
+                    const rect = tiltCard.getBoundingClientRect();
+                    const x = clientX - rect.left;
+                    const y = clientY - rect.top;
+
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+
+                    const rotateX = ((y - centerY) / centerY) * -maxTilt;
+                    const rotateY = ((x - centerX) / centerX) * maxTilt;
+
+                    tiltCard.classList.remove('resetting');
+                    tiltCard.style.transform = `rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.04, 1.04, 1.04)`;
+
+                    const glareX = (x / rect.width) * 100;
+                    const glareY = (y / rect.height) * 100;
+                    tiltGlare.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.45), transparent 68%)`;
+                    tiltGlare.style.opacity = '1';
+                };
+
+                const resetTilt = () => {
+                    tiltCard.classList.add('resetting');
+                    tiltCard.style.transform = 'rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+                    tiltGlare.style.opacity = '0';
+                };
+
+                tiltCard.addEventListener('mousemove', (e) => {
+                    handleTiltMove(e.clientX, e.clientY);
+                });
+
+                tiltCard.addEventListener('mouseleave', resetTilt);
+
+                tiltCard.addEventListener('touchmove', (e) => {
+                    if (e.touches.length > 0) {
+                        handleTiltMove(e.touches[0].clientX, e.touches[0].clientY);
+                    }
+                }, { passive: true });
+
+                tiltCard.addEventListener('touchend', resetTilt);
+            }
+
+            /* =========================================================
+               4. GOOGLE DINO RUNNER MINI-GAME (HTML5 CANVAS)
+            ========================================================= */
+            const canvas = document.getElementById('dino-canvas');
+            const ctx = canvas.getContext('2d');
+            const overlay = document.getElementById('dino-overlay');
+            const statusTitle = document.getElementById('dino-status-title');
+            const statusSub = document.getElementById('dino-status-sub');
+            const startBtn = document.getElementById('dino-start-btn');
+            const jumpBtn = document.getElementById('dino-jump-btn');
+            const scoreEl = document.getElementById('dino-score');
+            const highScoreEl = document.getElementById('dino-high-score');
+
+            let canvasWidth = 800;
+            let canvasHeight = 260;
+
+            function resizeCanvas() {
+                const parent = canvas.parentElement;
+                const dpr = window.devicePixelRatio || 1;
+                canvasWidth = parent.clientWidth;
+                canvasHeight = 260;
+                canvas.width = canvasWidth * dpr;
+                canvas.height = canvasHeight * dpr;
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                if (!gameRunning) {
+                    drawDinoScene();
+                }
+            }
+
+            let gameRunning = false;
+            let animationId = null;
+            let score = 0;
+            let highScore = parseInt(localStorage.getItem('whisnu-dino-hi') || '0', 10);
+            highScoreEl.textContent = String(highScore).padStart(5, '0');
+
+            const groundY = 215;
+            let gameSpeed = 6.2;
+            let frameCount = 0;
+
+            const dino = {
+                x: 56,
+                y: groundY - 44,
+                width: 40,
+                height: 44,
+                dy: 0,
+                gravity: 0.68,
+                jumpForce: -12.6,
+                isGrounded: true,
+                isDucking: false,
+                legFrame: 0
+            };
+
+            let obstacles = [];
+            let clouds = [
+                { x: 180, y: 55, speed: 0.6 },
+                { x: 480, y: 40, speed: 0.45 },
+                { x: 760, y: 70, speed: 0.55 }
+            ];
+            let groundDots = [];
+            for (let i = 0; i < 24; i++) {
+                groundDots.push({ x: i * 45, w: (i % 3 === 0 ? 8 : 4) });
+            }
+
+            function getThemePalette() {
+                const dark = document.documentElement.classList.contains('dark');
+                return {
+                    fg: dark ? '#f5f5f7' : '#1d1d1f',
+                    muted: dark ? '#52525b' : '#a1a1aa',
+                    cloud: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'
+                };
+            }
+
+            function drawPixelDino(x, y, legFrame, isDucking) {
+                const palette = getThemePalette();
+                ctx.fillStyle = palette.fg;
+
+                if (isDucking && dino.isGrounded) {
+                    // Crouched aerodynamic Dino
+                    const dy = y + 16;
+                    ctx.fillRect(x + 24, dy + 2, 22, 14);
+                    ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#161618' : '#ffffff';
+                    ctx.fillRect(x + 30, dy + 5, 4, 4);
+
+                    ctx.fillStyle = palette.fg;
+                    ctx.fillRect(x + 6, dy + 6, 22, 14);
+                    ctx.fillRect(x, dy + 8, 8, 8);
+
+                    if (legFrame === 0) {
+                        ctx.fillRect(x + 10, dy + 20, 5, 8);
+                        ctx.fillRect(x + 20, dy + 20, 5, 4);
+                    } else {
+                        ctx.fillRect(x + 10, dy + 20, 5, 4);
+                        ctx.fillRect(x + 20, dy + 20, 5, 8);
+                    }
+                    return;
+                }
+
+                // Standard Upright Dino
+                ctx.fillRect(x + 18, y, 22, 16);
+                ctx.fillRect(x + 34, y + 6, 6, 4);
+
+                ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#161618' : '#ffffff';
+                ctx.fillRect(x + 23, y + 4, 4, 4);
+
+                ctx.fillStyle = palette.fg;
+                ctx.fillRect(x + 16, y + 16, 10, 6);
+                ctx.fillRect(x + 8, y + 20, 20, 14);
+
+                ctx.fillRect(x + 28, y + 22, 6, 3);
+                ctx.fillRect(x + 32, y + 22, 2, 5);
+
+                ctx.fillRect(x, y + 18, 8, 10);
+                ctx.fillRect(x + 4, y + 28, 6, 4);
+
+                if (!dino.isGrounded) {
+                    ctx.fillRect(x + 10, y + 34, 5, 10);
+                    ctx.fillRect(x + 20, y + 34, 5, 10);
+                } else if (legFrame === 0) {
+                    ctx.fillRect(x + 10, y + 34, 5, 10);
+                    ctx.fillRect(x + 20, y + 34, 5, 5);
+                } else {
+                    ctx.fillRect(x + 10, y + 34, 5, 5);
+                    ctx.fillRect(x + 20, y + 34, 5, 10);
+                }
+            }
+
+            function drawCactus(obs) {
+                const palette = getThemePalette();
+                ctx.fillStyle = palette.fg;
+
+                if (obs.type === 'single') {
+                    ctx.fillRect(obs.x + 7, obs.y, 8, obs.height);
+                    ctx.fillRect(obs.x, obs.y + 10, 7, 5);
+                    ctx.fillRect(obs.x, obs.y + 4, 4, 11);
+                    ctx.fillRect(obs.x + 15, obs.y + 14, 7, 5);
+                    ctx.fillRect(obs.x + 18, obs.y + 7, 4, 12);
+                } else {
+                    ctx.fillRect(obs.x + 5, obs.y + 4, 7, obs.height - 4);
+                    ctx.fillRect(obs.x, obs.y + 12, 5, 4);
+                    ctx.fillRect(obs.x, obs.y + 7, 3, 9);
+
+                    ctx.fillRect(obs.x + 20, obs.y, 8, obs.height);
+                    ctx.fillRect(obs.x + 28, obs.y + 10, 6, 4);
+                    ctx.fillRect(obs.x + 31, obs.y + 4, 3, 10);
+                }
+            }
+
+            window.drawDinoScene = function() {
+                ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                const palette = getThemePalette();
+
+                ctx.fillStyle = palette.cloud;
+                clouds.forEach(c => {
+                    ctx.beginPath();
+                    ctx.roundRect(c.x, c.y, 46, 12, 6);
+                    ctx.roundRect(c.x + 10, c.y - 6, 24, 12, 6);
+                    ctx.fill();
+                });
+
+                ctx.strokeStyle = palette.muted;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, groundY);
+                ctx.lineTo(canvasWidth, groundY);
+                ctx.stroke();
+
+                ctx.fillStyle = palette.muted;
+                groundDots.forEach(d => {
+                    ctx.fillRect(d.x, groundY + 6, d.w, 2);
+                });
+
+                obstacles.forEach(drawCactus);
+                drawPixelDino(dino.x, dino.y, dino.legFrame, dino.isDucking);
+            };
+
+            function spawnObstacle() {
+                const isDouble = Math.random() > 0.55;
+                const height = isDouble ? 42 : 38;
+                const width = isDouble ? 34 : 22;
+                obstacles.push({
+                    x: canvasWidth + 30,
+                    y: groundY - height,
+                    width: width,
+                    height: height,
+                    type: isDouble ? 'double' : 'single'
+                });
+            }
+
+            function jump() {
+                if (!gameRunning) {
+                    startGame();
+                    return;
+                }
+                if (dino.isGrounded) {
+                    dino.dy = dino.jumpForce;
+                    dino.isGrounded = false;
+                    dino.isDucking = false;
+                }
+            }
+
+            function resetGame() {
+                score = 0;
+                gameSpeed = 6.2;
+                frameCount = 0;
+                obstacles = [];
+                dino.y = groundY - dino.height;
+                dino.dy = 0;
+                dino.isGrounded = true;
+                dino.isDucking = false;
+                scoreEl.textContent = '00000';
+            }
+
+            function startGame() {
+                resetGame();
+                gameRunning = true;
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                if (animationId) cancelAnimationFrame(animationId);
+                gameLoop();
+            }
+
+            function triggerGameOver() {
+                gameRunning = false;
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('whisnu-dino-hi', String(highScore));
+                    highScoreEl.textContent = String(highScore).padStart(5, '0');
+                }
+                statusTitle.textContent = 'Game Over! Nabrak Kaktus 😅';
+                statusSub.textContent = `Skor kamu: ${score} — Coba lagi biar ngalahin rekor!`;
+                startBtn.textContent = 'Main Lagi';
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+            }
+
+            let nextSpawnTimer = 75;
+
+            function gameLoop() {
+                if (!gameRunning) return;
+
+                frameCount++;
+
+                if (frameCount % 5 === 0) {
+                    score++;
+                    scoreEl.textContent = String(score).padStart(5, '0');
+                    if (score % 100 === 0 && gameSpeed < 14) {
+                        gameSpeed += 0.45;
+                    }
+                }
+
+                if (frameCount % 7 === 0) {
+                    dino.legFrame = dino.legFrame === 0 ? 1 : 0;
+                }
+
+                const activeGravity = dino.isDucking && !dino.isGrounded ? dino.gravity * 2.1 : dino.gravity;
+                dino.dy += activeGravity;
+                dino.y += dino.dy;
+                if (dino.y >= groundY - dino.height) {
+                    dino.y = groundY - dino.height;
+                    dino.dy = 0;
+                    dino.isGrounded = true;
+                }
+
+                clouds.forEach(c => {
+                    c.x -= c.speed;
+                    if (c.x < -60) c.x = canvasWidth + 40;
+                });
+
+                groundDots.forEach(d => {
+                    d.x -= gameSpeed;
+                    if (d.x < -10) d.x = canvasWidth + Math.random() * 20;
+                });
+
+                nextSpawnTimer--;
+                if (nextSpawnTimer <= 0) {
+                    spawnObstacle();
+                    const minGap = Math.max(48, Math.floor(95 - gameSpeed * 3));
+                    nextSpawnTimer = minGap + Math.floor(Math.random() * 48);
+                }
+
+                for (let i = obstacles.length - 1; i >= 0; i--) {
+                    const obs = obstacles[i];
+                    obs.x -= gameSpeed;
+
+                    const pad = 6;
+                    const dinoTop = dino.isDucking && dino.isGrounded ? dino.y + 16 : dino.y;
+                    if (
+                        dino.x + pad < obs.x + obs.width - pad &&
+                        dino.x + dino.width - pad > obs.x + pad &&
+                        dinoTop + pad < obs.y + obs.height - pad &&
+                        dino.y + dino.height - pad > obs.y + pad
+                    ) {
+                        drawDinoScene();
+                        triggerGameOver();
+                        return;
+                    }
+
+                    if (obs.x + obs.width < -20) {
+                        obstacles.splice(i, 1);
+                    }
+                }
+
+                drawDinoScene();
+                animationId = requestAnimationFrame(gameLoop);
+            }
+
+            startBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                startGame();
+            });
+
+            jumpBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                jump();
+            });
+
+            canvas.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                jump();
+            });
+
+            window.addEventListener('keydown', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+
+                if (e.code === 'Space' || e.code === 'ArrowUp') {
+                    if (gameRunning || isVisible) {
+                        e.preventDefault();
+                        jump();
+                    }
+                } else if (e.code === 'ArrowDown') {
+                    if (gameRunning) {
+                        e.preventDefault();
+                        dino.isDucking = true;
+                    }
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                if (e.code === 'ArrowDown') {
+                    dino.isDucking = false;
+                }
+            });
+
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+        });
+    </script>
 </body>
 </html>
